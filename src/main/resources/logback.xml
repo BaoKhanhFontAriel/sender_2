@@ -140,6 +140,8 @@
         <appender-ref ref="STASH" level="info"/>
         <appender-ref ref="STDOUT" level="info"/>
     </logger>
-
+    <root level="debug">
+        <appender-ref ref="STDOUT" level="info"/>
+    </root>
 </configuration>
 
