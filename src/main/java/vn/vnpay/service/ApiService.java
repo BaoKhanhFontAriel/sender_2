@@ -9,6 +9,7 @@ import vn.vnpay.kafka.runnable.KafkaSendAndReceiveCallable;
 import vn.vnpay.models.ApiRequest;
 import vn.vnpay.util.ExecutorSingleton;
 import vn.vnpay.util.GsonSingleton;
+import vn.vnpay.util.KafkaUtils;
 import vn.vnpay.util.TokenUtils;
 
 import java.util.concurrent.ExecutionException;
@@ -34,13 +35,18 @@ public class ApiService {
 
         Future future = ExecutorSingleton.getInstance().getExecutorService().submit(new KafkaSendAndReceiveCallable(message));
 
-//        Future future =ExecutorSingleton.getInstance().getExecutorService().submit(new KafkaConsumerCallable());
         String response = null;
         try {
             response = (String) future.get();
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
+        return response;
+    }
+
+    public String sendToCore2(String data)  {
+        String message = createRequest(data);
+        String response = KafkaUtils.sendAndReceive(message);
         return response;
     }
 

@@ -51,4 +51,20 @@ public class ApiController {
         log.info("Time from api request to response is: {} ms", end - start);
         return message;
     }
+
+    @Path("/sendtocore2")
+    @POST
+    @Consumes({MediaType.APPLICATION_JSON})
+    @Produces("application/json")
+    public String sendToCore2(String data) {
+        log.info("sending data is: {}", data);
+
+        long start = System.currentTimeMillis();
+        String message = apiService.sendToCore2(data);
+        long end = System.currentTimeMillis();
+
+        log.info("end - start: {}", end - start);
+        log.info("Time from api request to response is: {} ms", end - start);
+        return message;
+    }
 }

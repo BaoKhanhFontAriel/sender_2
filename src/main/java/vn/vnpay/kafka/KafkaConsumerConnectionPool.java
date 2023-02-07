@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Getter
@@ -59,6 +60,7 @@ public class KafkaConsumerConnectionPool {
             instancePool.consumerProps = new Properties();
             instancePool.consumerProps.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
             instancePool.consumerProps.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "api-consumer");
+//            instancePool.consumerProps.setProperty(ConsumerConfig.DEFAULT_API_TIMEOUT_MS_CONFIG, ConsumerConfig.De);
             instancePool.consumerProps.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
             instancePool.consumerProps.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
             instancePool.consumerProps.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
@@ -72,7 +74,7 @@ public class KafkaConsumerConnectionPool {
         startTime = System.currentTimeMillis();
         try {
             for (int i = 0; i < initPoolSize; i++) {
-                KafkaConsumerConnectionCell connection = new KafkaConsumerConnectionCell(consumerProps, consumerTopic, timeOut);
+                KafkaConsumerConnectionCell connection = new KafkaConsumerConnectionCell(consumerProps, consumerTopic, timeOut, i);
                 pool.put(connection);
                 numOfConnectionCreated++;
             }
@@ -80,9 +82,7 @@ public class KafkaConsumerConnectionPool {
             log.warn("[Message : can not start connection pool] - [Connection pool : {}] - " + "[Exception : {}]",
                     this.toString(), e);
         }
-        thread.start();
-
-
+//        thread.start();
         endTime = System.currentTimeMillis();
         log.info("Start Kafka Consumer Connection pool in : {} ms", (endTime - startTime));
     }
@@ -91,7 +91,8 @@ public class KafkaConsumerConnectionPool {
         log.info("begin getting kafka connection!");
         KafkaConsumerConnectionCell connectionWraper = null;
         if (pool.size() == 0 && numOfConnectionCreated < maxPoolSize) {
-            connectionWraper = new KafkaConsumerConnectionCell(consumerProps, consumerTopic, timeOut);
+            int index = numOfConnectionCreated + 1;
+            connectionWraper = new KafkaConsumerConnectionCell(consumerProps, consumerTopic, timeOut, index);
             try {
                 pool.put(connectionWraper);
             } catch (InterruptedException e) {
@@ -120,7 +121,8 @@ public class KafkaConsumerConnectionPool {
         try {
             if (consumer.isClosed()) {
                 pool.remove(consumer);
-                KafkaConsumerConnectionCell connection = new KafkaConsumerConnectionCell(consumerProps, consumerTopic, timeOut);
+                int index = numOfConnectionCreated;
+                KafkaConsumerConnectionCell connection = new KafkaConsumerConnectionCell(consumerProps, consumerTopic, timeOut, index);
                 pool.put(connection);
             } else {
                 pool.put(consumer);

@@ -91,29 +91,29 @@
     </appender>
 
     <!-- DEBUG Level log appender -->
-    <appender name="DEBUG"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_DIR}/${fileName}-debug.log</file>
-        <!-- Filters, recording only DEBUG Level log -->
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>DEBUG</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </filter>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- Roll back by day daily -->
-            <fileNamePattern>${LOG_DIR}/%d{yyyy-MM}/${fileName}-debug.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <!-- Maximum log history 30 days -->
-            <maxHistory>${maxHistory}</maxHistory>
-            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>${maxFileSize}</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
-        </rollingPolicy>
+<!--    <appender name="DEBUG"-->
+<!--              class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+<!--        <file>${LOG_DIR}/${fileName}-debug.log</file>-->
+<!--        &lt;!&ndash; Filters, recording only DEBUG Level log &ndash;&gt;-->
+<!--        <filter class="ch.qos.logback.classic.filter.LevelFilter">-->
+<!--            <level>DEBUG</level>-->
+<!--            <onMatch>ACCEPT</onMatch>-->
+<!--            <onMismatch>DENY</onMismatch>-->
+<!--        </filter>-->
+<!--        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">-->
+<!--            &lt;!&ndash; Roll back by day daily &ndash;&gt;-->
+<!--            <fileNamePattern>${LOG_DIR}/%d{yyyy-MM}/${fileName}-debug.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>-->
+<!--            &lt;!&ndash; Maximum log history 30 days &ndash;&gt;-->
+<!--            <maxHistory>${maxHistory}</maxHistory>-->
+<!--            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">-->
+<!--                <maxFileSize>${maxFileSize}</maxFileSize>-->
+<!--            </timeBasedFileNamingAndTriggeringPolicy>-->
+<!--        </rollingPolicy>-->
 
-        <encoder>
-            <pattern>${pattern}</pattern>
-        </encoder>
-    </appender>
+<!--        <encoder>-->
+<!--            <pattern>${pattern}</pattern>-->
+<!--        </encoder>-->
+<!--    </appender>-->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
