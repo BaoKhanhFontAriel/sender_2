@@ -15,7 +15,7 @@ import java.util.concurrent.ScheduledExecutorService;
 @ToString
 public class ExecutorSingleton {
     private static ExecutorSingleton instance;
-    private ScheduledExecutorService executorService;
+    private  ScheduledExecutorService executorService;
 
     public ExecutorSingleton(){
         log.info("create new ExecutorServiceSingleton...");
@@ -29,8 +29,16 @@ public class ExecutorSingleton {
         return instance;
     }
 
+    public static void shutdownNow() {
+        instance.executorService.shutdownNow();
+    }
 
     public ScheduledExecutorService getExecutorService() {
         return executorService;
+    }
+    public static void shutdown(){
+    }
+    public static void wakeup(){
+        instance.executorService = Executors.newScheduledThreadPool(10);
     }
 }

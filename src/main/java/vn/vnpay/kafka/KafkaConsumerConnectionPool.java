@@ -5,7 +5,11 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import vn.vnpay.kafka.runnable.KafkaConsumerRunner;
+import vn.vnpay.util.ExecutorSingleton;
+import vn.vnpay.util.KafkaUtils;
 
+import java.time.Duration;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -88,11 +92,11 @@ public class KafkaConsumerConnectionPool {
     }
 
     public synchronized KafkaConsumerConnectionCell getConnection() {
-        log.info("begin getting kafka connection!");
         KafkaConsumerConnectionCell connectionWraper = null;
         if (pool.size() == 0 && numOfConnectionCreated < maxPoolSize) {
             int index = numOfConnectionCreated + 1;
             connectionWraper = new KafkaConsumerConnectionCell(consumerProps, consumerTopic, timeOut, index);
+            connectionWraper.getConsumer().poll(Duration.ofMillis(100));
             try {
                 pool.put(connectionWraper);
             } catch (InterruptedException e) {
@@ -105,6 +109,7 @@ public class KafkaConsumerConnectionPool {
 
         try {
             connectionWraper = pool.take();
+            log.info("Get kafka consumer connection assign to: {}", connectionWraper.getConsumer().assignment());
         } catch (InterruptedException e) {
             log.warn("Can not GET Connection from Pool, Current Poll size = " + pool.size()
                     + " , Number Connection : " + numOfConnectionCreated);

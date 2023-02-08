@@ -3,9 +3,12 @@ package vn.vnpay.kafka;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.admin.NewPartitions;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.TopicPartition;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.UUID;
@@ -19,19 +22,26 @@ public class KafkaConsumerConnectionCell {
     private long timeOut;
     private boolean isClosed;
     private KafkaConsumer<String, String> consumer;
+
     public KafkaConsumerConnectionCell(Properties consumerProps, String consumerTopic, long timeOut, int index) {
         this.timeOut = timeOut;
 
         String member_id = "api-consumer" + "-" + index;
         consumerProps.setProperty(ConsumerConfig.CLIENT_ID_CONFIG, member_id);
+        consumerProps.setProperty(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG, member_id);
 
+//        consumer.
         this.consumer = new KafkaConsumer<>(consumerProps);
+//        TopicPartition partition = new TopicPartition(consumerTopic, index);
 
         this.consumer.subscribe(Arrays.asList(consumerTopic));
-        log.info("consumer {} is subscribe to topic {}", consumer.groupMetadata().groupId(), consumerTopic);
+        this.consumer.poll(Duration.ofMillis(100));
+
+        log.info("consumer {} - member {} is assign to topic {} - partition {}",
+                consumer.groupMetadata().groupId(), consumer.groupMetadata().memberId(), consumerTopic, consumer.assignment());
     }
 
-    public void subscribeTopic(String... consumerTopic){
+    public void subscribeTopic(String... consumerTopic) {
         this.consumer.subscribe(Arrays.asList(consumerTopic));
     }
 
@@ -44,6 +54,7 @@ public class KafkaConsumerConnectionCell {
 
     public void close() {
         try {
+            consumer.unsubscribe();
             consumer.close();
             isClosed = true;
         } catch (Exception e) {
