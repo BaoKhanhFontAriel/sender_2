@@ -16,8 +16,7 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import vn.vnpay.kafka.*;
-import vn.vnpay.kafka.runnable.KafkaConsumerCallable;
-import vn.vnpay.kafka.runnable.KafkaConsumerRunner;
+
 
 import java.time.Duration;
 import java.util.*;
@@ -49,8 +48,9 @@ public class KafkaUtils {
                     ConsumerRecords<String, String> records = consumerCell.getConsumer().poll(Duration.ofMillis(100));
                     for (ConsumerRecord<String, String> r : records) {
                         log.info("----");
-                        log.info("kafka consumer {} receive data: offset = {}, key = {}, value = {}",
-                                consumerCell.getConsumer().groupMetadata().groupId(),
+                        log.info("kafka consumer id {} receive data: partition = {}, offset = {}, key = {}, value = {}",
+                                consumerCell.getConsumer().groupMetadata().groupInstanceId(),
+                                r.partition(),
                                 r.offset(), r.key(), r.value());
                         res = r.value();
                         return;

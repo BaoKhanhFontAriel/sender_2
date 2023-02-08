@@ -86,55 +86,60 @@ public class KafkaConsumerConnectionPool {
             log.warn("[Message : can not start connection pool] - [Connection pool : {}] - " + "[Exception : {}]",
                     this.toString(), e);
         }
+
+        for (KafkaConsumerConnectionCell consumerCell : pool) {
+            consumerCell.getConsumer().poll(Duration.ofMillis(100));
+        }
 //        thread.start();
+
         endTime = System.currentTimeMillis();
         log.info("Start Kafka Consumer Connection pool in : {} ms", (endTime - startTime));
     }
 
-    public synchronized KafkaConsumerConnectionCell getConnection() {
-        KafkaConsumerConnectionCell connectionWraper = null;
-        if (pool.size() == 0 && numOfConnectionCreated < maxPoolSize) {
-            int index = numOfConnectionCreated + 1;
-            connectionWraper = new KafkaConsumerConnectionCell(consumerProps, consumerTopic, timeOut, index);
-            connectionWraper.getConsumer().poll(Duration.ofMillis(100));
-            try {
-                pool.put(connectionWraper);
-            } catch (InterruptedException e) {
-                log.warn("Can not PUT Connection to Pool, Current Poll size = " + pool.size()
-                        + " , Number Connection : " + numOfConnectionCreated, e);
-                e.printStackTrace();
-            }
-            numOfConnectionCreated++;
-        }
-
-        try {
-            connectionWraper = pool.take();
-            log.info("Get kafka consumer connection assign to: {}", connectionWraper.getConsumer().assignment());
-        } catch (InterruptedException e) {
-            log.warn("Can not GET Connection from Pool, Current Poll size = " + pool.size()
-                    + " , Number Connection : " + numOfConnectionCreated);
-            e.printStackTrace();
-        }
-        connectionWraper.setRelaxTime(System.currentTimeMillis());
-        log.info("finish getting Kafka consumer connection, ");
-        return connectionWraper;
-    }
-
-
-    public void releaseConnection(KafkaConsumerConnectionCell consumer) {
-        log.info("begin releasing connection {}", consumer.toString());
-        try {
-            if (consumer.isClosed()) {
-                pool.remove(consumer);
-                int index = numOfConnectionCreated;
-                KafkaConsumerConnectionCell connection = new KafkaConsumerConnectionCell(consumerProps, consumerTopic, timeOut, index);
-                pool.put(connection);
-            } else {
-                pool.put(consumer);
-            }
-            log.info("successfully release connection {}", consumer.toString());
-        } catch (Exception e) {
-            log.error("Connection : " + consumer.toString(), e);
-        }
-    }
+//    public synchronized KafkaConsumerConnectionCell getConnection() {
+//        KafkaConsumerConnectionCell connectionWraper = null;
+//        if (pool.size() == 0 && numOfConnectionCreated < maxPoolSize) {
+//            int index = numOfConnectionCreated + 1;
+//            connectionWraper = new KafkaConsumerConnectionCell(consumerProps, consumerTopic, timeOut, index);
+//            connectionWraper.getConsumer().poll(Duration.ofMillis(100));
+//            try {
+//                pool.put(connectionWraper);
+//            } catch (InterruptedException e) {
+//                log.warn("Can not PUT Connection to Pool, Current Poll size = " + pool.size()
+//                        + " , Number Connection : " + numOfConnectionCreated, e);
+//                e.printStackTrace();
+//            }
+//            numOfConnectionCreated++;
+//        }
+//
+//        try {
+//            connectionWraper = pool.take();
+//            log.info("Get kafka consumer connection assign to: {}", connectionWraper.getConsumer().assignment());
+//        } catch (InterruptedException e) {
+//            log.warn("Can not GET Connection from Pool, Current Poll size = " + pool.size()
+//                    + " , Number Connection : " + numOfConnectionCreated);
+//            e.printStackTrace();
+//        }
+//        connectionWraper.setRelaxTime(System.currentTimeMillis());
+//        log.info("finish getting Kafka consumer connection, ");
+//        return connectionWraper;
+//    }
+//
+//
+//    public void releaseConnection(KafkaConsumerConnectionCell consumer) {
+//        log.info("begin releasing connection {}", consumer.toString());
+//        try {
+//            if (consumer.isClosed()) {
+//                pool.remove(consumer);
+//                int index = numOfConnectionCreated;
+//                KafkaConsumerConnectionCell connection = new KafkaConsumerConnectionCell(consumerProps, consumerTopic, timeOut, index);
+//                pool.put(connection);
+//            } else {
+//                pool.put(consumer);
+//            }
+//            log.info("successfully release connection {}", consumer.toString());
+//        } catch (Exception e) {
+//            log.error("Connection : " + consumer.toString(), e);
+//        }
+//    }
 }

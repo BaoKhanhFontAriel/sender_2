@@ -26,19 +26,14 @@ public class KafkaConsumerConnectionCell {
     public KafkaConsumerConnectionCell(Properties consumerProps, String consumerTopic, long timeOut, int index) {
         this.timeOut = timeOut;
 
-        String member_id = "api-consumer" + "-" + index;
-        consumerProps.setProperty(ConsumerConfig.CLIENT_ID_CONFIG, member_id);
+        String member_id = String.valueOf(index);
         consumerProps.setProperty(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG, member_id);
 
-//        consumer.
         this.consumer = new KafkaConsumer<>(consumerProps);
-//        TopicPartition partition = new TopicPartition(consumerTopic, index);
-
         this.consumer.subscribe(Arrays.asList(consumerTopic));
-        this.consumer.poll(Duration.ofMillis(100));
 
         log.info("consumer {} - member {} is assign to topic {} - partition {}",
-                consumer.groupMetadata().groupId(), consumer.groupMetadata().memberId(), consumerTopic, consumer.assignment());
+                consumer.groupMetadata().groupId(), consumer.groupMetadata().groupId(), consumerTopic, consumer.assignment());
     }
 
     public void subscribeTopic(String... consumerTopic) {
