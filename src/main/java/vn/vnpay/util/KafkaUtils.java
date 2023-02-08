@@ -2,44 +2,36 @@ package vn.vnpay.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.NewPartitions;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.streams.StreamsBuilder;
-import org.apache.kafka.streams.kstream.Consumed;
-import org.apache.kafka.streams.kstream.KStream;
 import vn.vnpay.kafka.*;
 
-
 import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class KafkaUtils {
-    private static AtomicReference<LinkedList<String>> responses;
     static KafkaConsumerConnectionPool consumerPool = KafkaConsumerConnectionPool.getInstancePool();
 
     public static String sendAndReceive(String message) {
         send(message);
         String res = receive();
         log.info("response is: {}", res);
-        return receive();
+        return res;
     }
 
     private static volatile String res = null;
+    private static volatile boolean isStopping = false;
+
     public static String receive() {
         log.info("Kafka receive.........");
+        res = null;
         for (KafkaConsumerConnectionCell consumerCell : consumerPool.getPool()) {
             ExecutorSingleton.getInstance().getExecutorService().submit((Runnable) () ->
             {
@@ -53,7 +45,6 @@ public class KafkaUtils {
                                 r.partition(),
                                 r.offset(), r.key(), r.value());
                         res = r.value();
-                        return;
                     }
                 }
             });

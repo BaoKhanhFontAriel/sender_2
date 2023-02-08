@@ -60,10 +60,11 @@ public class KafkaConsumerConnectionPool {
 
             instancePool.consumerTopic = KafkaConnectionPoolConfig.KAFKA_CONSUMER_TOPIC;
             String bootstrapServers = KafkaConnectionPoolConfig.KAFKA_SERVER;
+            String grp_id = KafkaConnectionPoolConfig.KAFKA_CONSUMER_GROUP_ID;
 
             instancePool.consumerProps = new Properties();
             instancePool.consumerProps.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-            instancePool.consumerProps.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "api-consumer");
+            instancePool.consumerProps.setProperty(ConsumerConfig.GROUP_ID_CONFIG, grp_id);
 //            instancePool.consumerProps.setProperty(ConsumerConfig.DEFAULT_API_TIMEOUT_MS_CONFIG, ConsumerConfig.De);
             instancePool.consumerProps.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
             instancePool.consumerProps.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
@@ -87,9 +88,6 @@ public class KafkaConsumerConnectionPool {
                     this.toString(), e);
         }
 
-        for (KafkaConsumerConnectionCell consumerCell : pool) {
-            consumerCell.getConsumer().poll(Duration.ofMillis(100));
-        }
 //        thread.start();
 
         endTime = System.currentTimeMillis();

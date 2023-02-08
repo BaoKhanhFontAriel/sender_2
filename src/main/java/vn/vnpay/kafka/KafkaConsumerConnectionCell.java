@@ -31,9 +31,10 @@ public class KafkaConsumerConnectionCell {
 
         this.consumer = new KafkaConsumer<>(consumerProps);
         this.consumer.subscribe(Arrays.asList(consumerTopic));
+        this.consumer.poll(Duration.ofMillis(10));
 
         log.info("consumer {} - member {} is assign to topic {} - partition {}",
-                consumer.groupMetadata().groupId(), consumer.groupMetadata().groupId(), consumerTopic, consumer.assignment());
+                consumer.groupMetadata().groupId(), consumer.groupMetadata().groupInstanceId(), consumerTopic, consumer.assignment());
     }
 
     public void subscribeTopic(String... consumerTopic) {
