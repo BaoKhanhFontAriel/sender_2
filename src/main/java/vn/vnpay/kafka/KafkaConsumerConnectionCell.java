@@ -23,15 +23,13 @@ public class KafkaConsumerConnectionCell {
     private boolean isClosed;
     private KafkaConsumer<String, String> consumer;
 
-    public KafkaConsumerConnectionCell(Properties consumerProps, String consumerTopic, long timeOut, int index) {
-        this.timeOut = timeOut;
-
+    public KafkaConsumerConnectionCell(Properties consumerProps, String consumerTopic, int index) {
         String member_id = String.valueOf(index);
         consumerProps.setProperty(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG, member_id);
 
         this.consumer = new KafkaConsumer<>(consumerProps);
         this.consumer.subscribe(Arrays.asList(consumerTopic));
-        this.consumer.poll(Duration.ofMillis(10));
+        this.consumer.poll(Duration.ofMillis(100));
 
         log.info("consumer {} - member {} is assign to topic {} - partition {}",
                 consumer.groupMetadata().groupId(), consumer.groupMetadata().groupInstanceId(), consumerTopic, consumer.assignment());

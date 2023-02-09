@@ -19,6 +19,8 @@ public class KafkaProducerConnectionCell {
     public KafkaProducerConnectionCell(Properties producerConfig, String producerTopic, long timeOut) {
         this.producer = new KafkaProducer<>(producerConfig);
         this.producerTopic = producerTopic;
+        this.timeOut = timeOut;
+        log.info("create producer {}", producer.metrics());
     }
 
     public boolean isTimeOut() {

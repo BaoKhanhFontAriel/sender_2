@@ -3,10 +3,13 @@ package vn.vnpay.service;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import vn.vnpay.error.ErrorCode;
+import vn.vnpay.kafka.KafkaConnectionPoolConfig;
 import vn.vnpay.kafka.KafkaConsumerConnectionPool;
 import vn.vnpay.kafka.KafkaProducerConnectionPool;
 import vn.vnpay.kafka.runnable.KafkaSendAndReceiveCallable;
 import vn.vnpay.models.ApiRequest;
+import vn.vnpay.models.ApiResponse;
 import vn.vnpay.util.ExecutorSingleton;
 import vn.vnpay.util.GsonSingleton;
 import vn.vnpay.util.KafkaUtils;
@@ -14,6 +17,8 @@ import vn.vnpay.util.TokenUtils;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 public class ApiService {
@@ -33,13 +38,22 @@ public class ApiService {
 //        String response = conn.sendAndReceive(message);
 //        rabbitConnectionPool.releaseConnection(conn);
 
-        Future future = ExecutorSingleton.getInstance().getExecutorService().submit(new KafkaSendAndReceiveCallable(message));
+        Future future = ExecutorSingleton.submit(new KafkaSendAndReceiveCallable(message));
 
         String response = null;
         try {
-            response = (String) future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
+            response = (String) future.get(60000, TimeUnit.MILLISECONDS);
+        } catch (ExecutionException e) {
+            log.info("Can not execute KafkaSendAndReceiveCallable", e);
+            response = GsonSingleton.toJson(new ApiResponse(ErrorCode.MULTI_THREAD_ERROR, e.getMessage(), null));
+        }
+        catch (InterruptedException e) {
+            log.info("Thread is interrupted", e);
+            response = GsonSingleton.toJson(new ApiResponse(ErrorCode.MULTI_THREAD_ERROR, e.getMessage(), null));
+        } catch (TimeoutException e) {
+            log.info("kafka send and receive is out of time", e);
+            response = GsonSingleton.toJson(
+                    new ApiResponse(ErrorCode.MULTI_THREAD_ERROR, "Request is time out", null));
         }
         return response;
     }

@@ -4,8 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import vn.vnpay.kafka.runnable.KafkaSendAndReceiveCallable;
 
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
 
@@ -33,12 +35,20 @@ public class ExecutorSingleton {
         instance.executorService.shutdownNow();
     }
 
+    public static void submit(Runnable runnable) {
+        instance.executorService.submit(runnable);
+    }
+
+    public static Future submit(KafkaSendAndReceiveCallable kafkaSendAndReceiveCallable) {
+        return instance.executorService.submit(kafkaSendAndReceiveCallable);
+    }
+
     public ScheduledExecutorService getExecutorService() {
         return executorService;
     }
     public static void shutdown(){
     }
     public static void wakeup(){
-        instance.executorService = Executors.newScheduledThreadPool(10);
+        instance.executorService = Executors.newScheduledThreadPool(1000);
     }
 }

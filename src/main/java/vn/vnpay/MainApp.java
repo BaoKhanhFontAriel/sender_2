@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewPartitions;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.jboss.resteasy.plugins.server.tjws.PatchedHttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.vnpay.controller.ApiController;
@@ -15,6 +16,7 @@ import vn.vnpay.kafka.KafkaConsumerConnectionPool;
 import vn.vnpay.kafka.KafkaProducerConnectionPool;
 import vn.vnpay.service.ApiService;
 import vn.vnpay.thread.ShutdownThread;
+import vn.vnpay.util.ExecutorSingleton;
 import vn.vnpay.util.KafkaUtils;
 
 import javax.ws.rs.ApplicationPath;
@@ -37,6 +39,7 @@ public class MainApp extends Application {
 
         singleton.add(new ApiController());
         classes.add(ApiService.class);
+        classes.add(PatchedHttpServletRequest.class);
 
         KafkaUtils.createNewTopic(KafkaConnectionPoolConfig.KAFKA_CONSUMER_TOPIC, 10, (short) 1);
 
@@ -44,6 +47,7 @@ public class MainApp extends Application {
         responses.set(new LinkedList<>());
         log.info("atomic responses {}:", responses);
 
+        ExecutorSingleton.getInstance();
         KafkaConsumerConnectionPool.getInstancePool().start();
         KafkaProducerConnectionPool.getInstancePool().start();
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());
