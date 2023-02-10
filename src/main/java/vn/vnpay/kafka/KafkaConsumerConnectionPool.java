@@ -46,6 +46,10 @@ public class KafkaConsumerConnectionPool {
         return instancePool;
     }
 
+    public synchronized LinkedBlockingQueue<KafkaConsumerConnectionCell> getPool() {
+        return pool;
+    }
+
     public void start() {
         log.info("Create Kafka Consumer Connection pool........................ ");
         // Load Connection to Pool

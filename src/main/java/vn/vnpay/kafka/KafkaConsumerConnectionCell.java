@@ -3,15 +3,13 @@ package vn.vnpay.kafka;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.admin.NewPartitions;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.TopicPartition;
 
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.UUID;
 
 
 @Slf4j
@@ -33,6 +31,10 @@ public class KafkaConsumerConnectionCell {
 
         log.info("consumer {} - member {} is assign to topic {} - partition {}",
                 consumer.groupMetadata().groupId(), consumer.groupMetadata().groupInstanceId(), consumerTopic, consumer.assignment());
+    }
+
+    public synchronized ConsumerRecords<String, String> poll(Duration duration){
+        return consumer.poll(duration);
     }
 
     public void subscribeTopic(String... consumerTopic) {

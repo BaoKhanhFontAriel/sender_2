@@ -10,4 +10,7 @@ public class ErrorCode {
 
     public static final String MULTI_THREAD_ERROR = "06";
 
+    public static final String KAFKA_ERROR = "07";
+
+
 }

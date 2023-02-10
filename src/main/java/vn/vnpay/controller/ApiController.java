@@ -15,14 +15,14 @@ import javax.ws.rs.core.MediaType;
 @Path("/api")
 public class ApiController {
     private static final Logger log = LoggerFactory.getLogger(ApiController.class);
+    private ApiService apiService = new ApiService();
+
     @Path("/hello-world")
     @GET
     @Produces("text/plain")
     public String hello() {
         return "Hello, World!";
     }
-
-    private ApiService apiService = new ApiService();
 
     @Path("/sendtocore")
     @POST

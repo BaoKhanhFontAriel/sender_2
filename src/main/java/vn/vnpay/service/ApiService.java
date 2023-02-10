@@ -10,15 +10,9 @@ import vn.vnpay.kafka.KafkaProducerConnectionPool;
 import vn.vnpay.kafka.runnable.KafkaSendAndReceiveCallable;
 import vn.vnpay.models.ApiRequest;
 import vn.vnpay.models.ApiResponse;
-import vn.vnpay.util.ExecutorSingleton;
-import vn.vnpay.util.GsonSingleton;
-import vn.vnpay.util.KafkaUtils;
-import vn.vnpay.util.TokenUtils;
+import vn.vnpay.util.*;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 public class ApiService {
@@ -32,13 +26,14 @@ public class ApiService {
     private Gson gson = GsonSingleton.getInstance().getGson();
     public String sendToCore(String data)  {
 
-        String message = createRequest(data);
+//        String message = createRequest(data);
 
 //        RabbitConnectionCell conn = rabbitConnectionPool.getConnection();
 //        String response = conn.sendAndReceive(message);
 //        rabbitConnectionPool.releaseConnection(conn);
 
-        Future future = ExecutorSingleton.submit(new KafkaSendAndReceiveCallable(message));
+        ApiRequest apiRequest = RequestUtils.createRequest(data);
+        Future future = ExecutorSingleton.submit(new KafkaSendAndReceiveCallable(apiRequest));
 
         String response = null;
         try {
@@ -58,16 +53,5 @@ public class ApiService {
         return response;
     }
 
-    public String sendToCore2(String data)  {
-        String message = createRequest(data);
-        String response = KafkaUtils.sendAndReceive(message);
-        return response;
-    }
 
-    public String createRequest(String data) {
-        String token = TokenUtils.generateNewToken();
-        ApiRequest customerRequest = new ApiRequest(token, data);
-        log.info("create request {}", customerRequest.toString());
-        return gson.toJson(customerRequest);
-    }
 }
