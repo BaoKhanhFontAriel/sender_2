@@ -27,25 +27,13 @@ public class KafkaConsumerConnectionCell {
 
         this.consumer = new KafkaConsumer<>(consumerProps);
         this.consumer.subscribe(Arrays.asList(consumerTopic));
-        this.consumer.poll(Duration.ofMillis(100));
 
         log.info("consumer {} - member {} is assign to topic {} - partition {}",
                 consumer.groupMetadata().groupId(), consumer.groupMetadata().groupInstanceId(), consumerTopic, consumer.assignment());
     }
 
-    public synchronized ConsumerRecords<String, String> poll(Duration duration){
+    public ConsumerRecords<String, String> poll(Duration duration){
         return consumer.poll(duration);
-    }
-
-    public void subscribeTopic(String... consumerTopic) {
-        this.consumer.subscribe(Arrays.asList(consumerTopic));
-    }
-
-    public boolean isTimeOut() {
-        if (System.currentTimeMillis() - this.relaxTime > this.timeOut) {
-            return true;
-        }
-        return false;
     }
 
     public void close() {

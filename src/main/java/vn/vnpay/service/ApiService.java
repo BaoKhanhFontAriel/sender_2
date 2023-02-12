@@ -4,14 +4,12 @@ import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.vnpay.error.ErrorCode;
-import vn.vnpay.kafka.KafkaConnectionPoolConfig;
 import vn.vnpay.kafka.KafkaConsumerConnectionPool;
 import vn.vnpay.kafka.KafkaProducerConnectionPool;
-import vn.vnpay.kafka.runnable.KafkaSendAndReceiveCallable;
 import vn.vnpay.models.ApiRequest;
 import vn.vnpay.models.ApiResponse;
+import vn.vnpay.runnable.KafkaSendAndReceiveCallable;
 import vn.vnpay.util.*;
-
 import java.util.concurrent.*;
 
 
@@ -25,31 +23,26 @@ public class ApiService {
     KafkaConsumerConnectionPool consumerPool = KafkaConsumerConnectionPool.getInstancePool();
     private Gson gson = GsonSingleton.getInstance().getGson();
     public String sendToCore(String data)  {
-
-//        String message = createRequest(data);
-
-//        RabbitConnectionCell conn = rabbitConnectionPool.getConnection();
-//        String response = conn.sendAndReceive(message);
-//        rabbitConnectionPool.releaseConnection(conn);
-
         ApiRequest apiRequest = RequestUtils.createRequest(data);
-        Future future = ExecutorSingleton.submit(new KafkaSendAndReceiveCallable(apiRequest));
+        String message = GsonSingleton.toJson(apiRequest);
+        Future future = ExecutorSingleton.submit(new KafkaSendAndReceiveCallable(message));
 
-        String response = null;
+        String response = GsonSingleton.toJson(new ApiResponse(ErrorCode.KAFKA_ERROR, "", apiRequest.getToken()));
         try {
             response = (String) future.get(60000, TimeUnit.MILLISECONDS);
         } catch (ExecutionException e) {
-            log.info("Can not execute KafkaSendAndReceiveCallable", e);
-            response = GsonSingleton.toJson(new ApiResponse(ErrorCode.MULTI_THREAD_ERROR, e.getMessage(), null));
+            log.info("Kafka can not get response", e);
+            response = GsonSingleton.toJson(new ApiResponse(ErrorCode.EXECUTION_ERROR, e.getMessage(), apiRequest.getToken()));
         }
         catch (InterruptedException e) {
             log.info("Thread is interrupted", e);
-            response = GsonSingleton.toJson(new ApiResponse(ErrorCode.MULTI_THREAD_ERROR, e.getMessage(), null));
+            response = GsonSingleton.toJson(new ApiResponse(ErrorCode.INTERRUPTED_ERROR, e.getMessage(), apiRequest.getToken()));
         } catch (TimeoutException e) {
-            log.info("kafka send and receive is out of time", e);
+            log.info("kafka send and receive is out of time ", e);
             response = GsonSingleton.toJson(
-                    new ApiResponse(ErrorCode.MULTI_THREAD_ERROR, "Request is time out", null));
+                    new ApiResponse(ErrorCode.MULTI_THREAD_ERROR, "Request is time out", apiRequest.getToken()));
         }
+
         return response;
     }
 

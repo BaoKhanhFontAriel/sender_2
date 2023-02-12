@@ -34,7 +34,7 @@ public class MainApp extends Application {
     private Set<Class<?>> classes = new HashSet<>();
 
     private AtomicReference<LinkedList<String>> responses;
-    public MainApp() throws JoranException, IOException {
+    public MainApp() {
         log.info("start Main......");
 
         singleton.add(new ApiController());
@@ -42,17 +42,11 @@ public class MainApp extends Application {
         classes.add(PatchedHttpServletRequest.class);
 
         KafkaUtils.createNewTopic(KafkaConnectionPoolConfig.KAFKA_CONSUMER_TOPIC, 10, (short) 1);
-
-        responses = new AtomicReference<>();
-        responses.set(new LinkedList<>());
-        log.info("atomic responses {}:", responses);
-
         ExecutorSingleton.getInstance();
         KafkaConsumerConnectionPool.getInstancePool().start();
         KafkaProducerConnectionPool.getInstancePool().start();
+        KafkaConsumerConnectionPool.startPoolPolling();
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());
-
-        log.info("finish Main startup");
     }
 
     @Override

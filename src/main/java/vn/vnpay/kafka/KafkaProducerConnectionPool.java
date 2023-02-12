@@ -98,12 +98,13 @@ public class KafkaProducerConnectionPool {
 
         try {
             connectionWraper = pool.take();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException  e) {
             log.warn("Can not GET Connection from Pool, Current Poll size = " + pool.size()
                     + " , Number Connection : " + numOfConnectionCreated);
             e.printStackTrace();
         }
         connectionWraper.setRelaxTime(System.currentTimeMillis());
+
         log.info("finish getting Kafka producer connection, ");
         return connectionWraper;
     }
