@@ -24,8 +24,7 @@ public class ApiService {
     private Gson gson = GsonSingleton.getInstance().getGson();
     public String sendToCore(String data)  {
         ApiRequest apiRequest = RequestUtils.createRequest(data);
-        String message = GsonSingleton.toJson(apiRequest);
-        Future future = ExecutorSingleton.submit(new KafkaSendAndReceiveCallable(message));
+        Future future = ExecutorSingleton.submit(new KafkaSendAndReceiveCallable(apiRequest));
 
         String response = GsonSingleton.toJson(new ApiResponse(ErrorCode.KAFKA_ERROR, "", apiRequest.getToken()));
         try {

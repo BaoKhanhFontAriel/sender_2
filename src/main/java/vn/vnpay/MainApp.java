@@ -14,8 +14,11 @@ import vn.vnpay.controller.ApiController;
 import vn.vnpay.kafka.KafkaConnectionPoolConfig;
 import vn.vnpay.kafka.KafkaConsumerConnectionPool;
 import vn.vnpay.kafka.KafkaProducerConnectionPool;
+import vn.vnpay.redis.RedisConnectionPool;
+import vn.vnpay.redis.RedisConnectionPoolConfig;
 import vn.vnpay.service.ApiService;
 import vn.vnpay.thread.ShutdownThread;
+import vn.vnpay.util.AppConfigSingleton;
 import vn.vnpay.util.ExecutorSingleton;
 import vn.vnpay.util.KafkaUtils;
 
@@ -41,8 +44,10 @@ public class MainApp extends Application {
         classes.add(ApiService.class);
         classes.add(PatchedHttpServletRequest.class);
 
+//        AppConfigSingleton.getInstance().readConfig();
         KafkaUtils.createNewTopic(KafkaConnectionPoolConfig.KAFKA_CONSUMER_TOPIC, 10, (short) 1);
         ExecutorSingleton.getInstance();
+        RedisConnectionPool.getInstancePool().start();
         KafkaConsumerConnectionPool.getInstancePool().start();
         KafkaProducerConnectionPool.getInstancePool().start();
         KafkaConsumerConnectionPool.startPoolPolling();

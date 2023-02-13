@@ -3,34 +3,28 @@ package vn.vnpay.util;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import vn.vnpay.error.ErrorCode;
 import vn.vnpay.kafka.*;
 import vn.vnpay.models.ApiRequest;
-import vn.vnpay.models.ApiResponse;
 
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class KafkaUtils {
-    public static String sendAndReceive(String message) throws Exception {
-        log.info("send and receive: {}", message);
-        send(message);
-        String res = receive();
+    public static String sendAndReceive(ApiRequest apiRequest) throws Exception {
+        log.info("send and receive: {}", apiRequest);
+        send(GsonSingleton.toJson(apiRequest));
+
+        String res = receive(apiRequest.getToken());
         log.info("response is: {}", res);
         return res;
     }
 
-    public static String receive() throws TimeoutException, InterruptedException {
+    public static String receive(String token) throws TimeoutException, InterruptedException {
         log.info("Kafka start receiving.........");
-        return KafkaConsumerConnectionPool.getRecord();
+        return KafkaConsumerConnectionPool.getRecord(token);
     }
 
     public static void send(String message) throws Exception {
