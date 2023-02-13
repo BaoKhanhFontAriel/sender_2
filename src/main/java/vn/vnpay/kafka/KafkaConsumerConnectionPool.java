@@ -13,7 +13,6 @@ import vn.vnpay.redis.RedisConnectionPool;
 import vn.vnpay.util.ExecutorSingleton;
 import vn.vnpay.util.GsonSingleton;
 
-import javax.ws.rs.core.Response;
 import java.time.Duration;
 import java.util.Properties;
 import java.util.concurrent.*;
@@ -36,6 +35,8 @@ public class KafkaConsumerConnectionPool {
     protected long startTime;
     protected long endTime;
     ;
+    private static AtomicReference<LinkedBlockingQueue<String>> recordQueue = new AtomicReference<>(new LinkedBlockingQueue<>());
+
 
     public synchronized static KafkaConsumerConnectionPool getInstancePool() {
         if (instancePool == null) {
@@ -69,40 +70,26 @@ public class KafkaConsumerConnectionPool {
                 numOfConnectionCreated++;
             }
         } catch (Exception e) {
-            log.warn("[Message : can not start connection pool] - [Connection pool : {}] - " + "[Exception : {}]",
-                    this.toString(), e);
+            log.warn("[Message : can not start connection pool] - [Connection pool : {}] - " + "[Exception : {}]", this.toString(), e);
         }
 
         endTime = System.currentTimeMillis();
         log.info("Start Kafka Consumer Connection pool in : {} ms", (endTime - startTime));
     }
 
+
     public static void startPoolPolling() {
         log.info("Start Kafka consumer pool polling.........");
         for (KafkaConsumerConnectionCell consumerCell : instancePool.pool) {
             log.info("consumer {} start polling", consumerCell.getConsumer().groupMetadata().groupInstanceId());
-            Future future = ExecutorSingleton.submit((Runnable) () ->
-            {
+            Future future = ExecutorSingleton.submit((Runnable) () -> {
                 while (true) {
                     ConsumerRecords<String, String> records = consumerCell.poll(Duration.ofMillis(100));
                     for (ConsumerRecord<String, String> r : records) {
                         log.info("----");
-                        log.info("kafka consumer id {} receive data: partition = {}, offset = {}, key = {}, value = {}",
-                                consumerCell.getConsumer().groupMetadata().groupInstanceId(),
-                                r.partition(),
-                                r.offset(), r.key(), r.value());
+                        log.info("kafka consumer id {} receive data: partition = {}, offset = {}, key = {}, value = {}", consumerCell.getConsumer().groupMetadata().groupInstanceId(), r.partition(), r.offset(), r.key(), r.value());
 
-
-                        ApiResponse response = GsonSingleton.getInstance().getGson().fromJson(r.value(), ApiResponse.class);
-
-//                         push to redis
-                        ExecutorSingleton.getInstance().getExecutorService().submit(() -> {
-                            log.info("save to redis token {}", response.getData());
-                            RedisConnectionCell redisCell = RedisConnectionPool.getInstancePool().getConnection();
-                            redisCell.getJedis().set("kafka:responses:" + response.getData(), r.value());
-                            redisCell.getJedis().expire("kafka:responses:" + response.getData(), 120000);
-                            RedisConnectionPool.getInstancePool().releaseConnection(redisCell);
-                        });
+                        recordQueue.get().add(r.value());
                     }
                 }//
             });
@@ -110,43 +97,8 @@ public class KafkaConsumerConnectionPool {
     }
 
 
-    public static String getRecord(String token) throws TimeoutException, InterruptedException {
+    public static String getRecord() throws InterruptedException {
         log.info("Get Kafka Consumer pool record.......");
-        ;
-//        log.info("thread pool size: {}", ExecutorSingleton.getInstance().getExecutorService().;
-        String response ;
-
-//        String response = startPoolPolling();
-        //  get key from redis
-        Thread.sleep(50);
-        RedisConnectionCell redisCell = RedisConnectionPool.getInstancePool().getConnection();
-//        boolean isTrue = true;
-//        while (isTrue) {
-//            if (redisCell.getJedis().exists("kafka:responses:" + token)) {
-//                response = redisCell.getJedis().get("kafka:responses:" + token);
-//                isTrue = false;
-//            }
-//        }
-
-//
-//        Future future = ExecutorSingleton.submit(() -> {
-//            while (true) {
-        response = redisCell.getJedis().get("kafka:responses:" + token);
-//
-//                if (response.get() != null) {
-//                    break;
-//                }
-//            }
-//        });
-//
-//        try {
-//            future.get(20, TimeUnit.MILLISECONDS);
-//        } catch (ExecutionException e) {
-//            throw new RuntimeException(e);
-//        }
-
-////
-        RedisConnectionPool.getInstancePool().releaseConnection(redisCell);
-        return response == null? token : response;
+        return recordQueue.get().take();
     }
 }

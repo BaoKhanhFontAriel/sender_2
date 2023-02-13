@@ -17,14 +17,14 @@ public class KafkaUtils {
         log.info("send and receive: {}", apiRequest);
         send(GsonSingleton.toJson(apiRequest));
 
-        String res = receive(apiRequest.getToken());
+        String res = receive();
         log.info("response is: {}", res);
         return res;
     }
 
-    public static String receive(String token) throws TimeoutException, InterruptedException {
+    public static String receive() throws InterruptedException {
         log.info("Kafka start receiving.........");
-        return KafkaConsumerConnectionPool.getRecord(token);
+        return KafkaConsumerConnectionPool.getRecord();
     }
 
     public static void send(String message) throws Exception {
