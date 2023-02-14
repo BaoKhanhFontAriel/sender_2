@@ -53,7 +53,6 @@ public class KafkaProducerConnectionPool {
 
             instancePool.producerTopic = KafkaConnectionPoolConfig.KAFKA_PRODUCER_TOPIC;
             String bootstrapServers = KafkaConnectionPoolConfig.KAFKA_SERVER;
-
             instancePool.producerProps = new Properties();
             instancePool.producerProps.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
             instancePool.producerProps.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
@@ -76,7 +75,7 @@ public class KafkaProducerConnectionPool {
             log.warn("[Message : can not start connection pool] - [Connection pool : {}] - " + "[Exception : {}]",
                     this.toString(), e);
         }
-//        thread.start();
+        thread.start();
         endTime = System.currentTimeMillis();
         log.info("Start Kafka Producer Connection pool in : {} ms", (endTime - startTime));
     }

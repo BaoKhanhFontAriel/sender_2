@@ -87,7 +87,12 @@ public class KafkaConsumerConnectionPool {
                     ConsumerRecords<String, String> records = consumerCell.poll(Duration.ofMillis(100));
                     for (ConsumerRecord<String, String> r : records) {
                         log.info("----");
-                        log.info("kafka consumer id {} receive data: partition = {}, offset = {}, key = {}, value = {}", consumerCell.getConsumer().groupMetadata().groupInstanceId(), r.partition(), r.offset(), r.key(), r.value());
+                        log.info("kafka consumer id {} receive data: partition = {}, offset = {}, key = {}, value = {}",
+                                consumerCell.getConsumer().groupMetadata().groupInstanceId(),
+                                r.partition(),
+                                r.offset(),
+                                r.key(),
+                                r.value());
 
                         recordQueue.get().add(r.value());
                     }

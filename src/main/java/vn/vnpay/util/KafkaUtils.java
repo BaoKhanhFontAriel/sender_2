@@ -13,9 +13,9 @@ import java.util.concurrent.*;
 
 @Slf4j
 public class KafkaUtils {
-    public static String sendAndReceive(ApiRequest apiRequest) throws Exception {
-        log.info("send and receive: {}", apiRequest);
-        send(GsonSingleton.toJson(apiRequest));
+    public static String sendAndReceive(String data) throws Exception {
+        log.info("send and receive: {}", data);
+        send(data);
 
         String res = receive();
         log.info("response is: {}", res);

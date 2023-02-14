@@ -40,4 +40,20 @@ public class ApiController {
         log.info("Time from api request to response is: {} ms", end - start);
         return message;
     }
+
+    @Path("/sendpayment")
+    @GET
+    @Produces("application/json")
+    public String sendPayment(String data) {
+//        log.info("IP call request is: {}", request.getRemoteAddr());
+        log.info("sending data is: {}", data);
+
+        long start = System.currentTimeMillis();
+        String message = apiService.sendPayment();
+        long end = System.currentTimeMillis();
+
+        log.info("end - start: {}", end - start);
+        log.info("Time from api request to response is: {} ms", end - start);
+        return message;
+    }
 }
