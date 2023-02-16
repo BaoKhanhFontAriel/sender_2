@@ -1,32 +1,23 @@
 package vn.vnpay;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.core.joran.spi.JoranException;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.NewPartitions;
-import org.apache.kafka.clients.admin.NewTopic;
-import org.jboss.resteasy.plugins.server.tjws.PatchedHttpServletRequest;
+import org.jboss.resteasy.core.ResteasyHttpServletRequestWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.vnpay.controller.ApiController;
-import vn.vnpay.kafka.KafkaConnectionPoolConfig;
-import vn.vnpay.kafka.KafkaConsumerConnectionPool;
-import vn.vnpay.kafka.KafkaProducerConnectionPool;
+import vn.vnpay.kafka.KafkaConsumerPool;
+import vn.vnpay.kafka.KafkaPoolConfig;
+import vn.vnpay.kafka.KafkaProducerPool;
 import vn.vnpay.redis.RedisConnectionPool;
-import vn.vnpay.redis.RedisConnectionPoolConfig;
 import vn.vnpay.service.ApiService;
 import vn.vnpay.thread.ShutdownThread;
-import vn.vnpay.util.AppConfigSingleton;
 import vn.vnpay.util.ExecutorSingleton;
 import vn.vnpay.util.KafkaUtils;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 //@Slf4j
@@ -42,15 +33,14 @@ public class MainApp extends Application {
 
         singleton.add(new ApiController());
         classes.add(ApiService.class);
-        classes.add(PatchedHttpServletRequest.class);
+        classes.add(ResteasyHttpServletRequestWrapper.class);
 
-//        AppConfigSingleton.getInstance().readConfig();
-        KafkaUtils.createNewTopic(KafkaConnectionPoolConfig.KAFKA_CONSUMER_TOPIC, 10, (short) 1);
+//        AppConfigSingleton.getInstance().readonfig();
+        KafkaUtils.createNewTopic(KafkaPoolConfig.KAFKA_PRODUCER_TOPIC, 10, (short) 1);
         ExecutorSingleton.getInstance();
         RedisConnectionPool.getInstancePool().start();
-        KafkaConsumerConnectionPool.getInstancePool().start();
-        KafkaProducerConnectionPool.getInstancePool().start();
-        KafkaConsumerConnectionPool.startPoolPolling();
+        KafkaProducerPool.getInstancePool();
+        KafkaConsumerPool.getInstancePool().startPoolPolling();
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());
     }
 

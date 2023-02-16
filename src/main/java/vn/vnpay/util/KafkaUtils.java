@@ -6,10 +6,8 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import vn.vnpay.kafka.*;
-import vn.vnpay.models.ApiRequest;
 
 import java.util.*;
-import java.util.concurrent.*;
 
 @Slf4j
 public class KafkaUtils {
@@ -22,19 +20,19 @@ public class KafkaUtils {
         return res;
     }
 
-    public static String receive() throws InterruptedException {
+    public static String receive() throws Exception {
         log.info("Kafka start receiving.........");
-        return KafkaConsumerConnectionPool.getRecord();
+        return KafkaConsumerPool.getRecord();
     }
 
     public static void send(String message) throws Exception {
         log.info("Kafka send.........");
-        KafkaProducerConnectionCell producerCell = KafkaProducerConnectionPool.getInstancePool().getConnection();
+        KafkaProducerCell producerCell = KafkaProducerPool.getInstancePool().getConnection();
         KafkaProducer<String, String> producer = producerCell.getProducer();
 
         // send message
         log.info("message send {}", message);
-        ProducerRecord<String, String> record = new ProducerRecord<>(KafkaConnectionPoolConfig.KAFKA_PRODUCER_TOPIC, message);
+        ProducerRecord<String, String> record = new ProducerRecord<>(producerCell.getProducerTopic(), message);
         try{
             producer.send(record, (recordMetadata, e) -> {
                 if (e == null) {
@@ -51,14 +49,18 @@ public class KafkaUtils {
         }
 
 
-        KafkaProducerConnectionPool.getInstancePool().releaseConnection(producerCell);
+        KafkaProducerPool.getInstancePool().releaseConnection(producerCell);
     }
+
+    private static AdminClient adminClient;
 
     public static void createNewTopic(String topic, int partition, short replica) {
         //        //create partition
-        Properties props = new Properties();
-        props.put("bootstrap.servers", "localhost:29092");
-        AdminClient adminClient = AdminClient.create(props);
+        if (adminClient == null){
+            Properties props = new Properties();
+            props.put("bootstrap.servers", "localhost:29092");
+            adminClient = AdminClient.create(props);
+        }
 
         NewTopic newTopic = new NewTopic(topic, partition, replica);
         adminClient.createTopics(Arrays.asList(newTopic));

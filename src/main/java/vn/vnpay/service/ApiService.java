@@ -1,20 +1,15 @@
 package vn.vnpay.service;
 
 import com.google.gson.Gson;
-import lombok.Builder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.vnpay.error.ErrorCode;
-import vn.vnpay.kafka.KafkaConsumerConnectionPool;
-import vn.vnpay.kafka.KafkaProducerConnectionPool;
 import vn.vnpay.models.ApiRequest;
 import vn.vnpay.models.ApiResponse;
 import vn.vnpay.models.PaymentRequest;
 import vn.vnpay.runnable.KafkaSendAndReceiveCallable;
-import vn.vnpay.runnable.SendPaymentCallable;
 import vn.vnpay.util.*;
 
-import java.util.Random;
 import java.util.concurrent.*;
 
 
@@ -24,8 +19,7 @@ public class ApiService {
 //    OracleConnectionPool oracleConnectionPool = OracleConnectionPool.getInstancePool();
 //    RabbitConnectionPool rabbitConnectionPool = RabbitConnectionPool.getInstancePool();
 //    KafkaConnectionPool kafkaConnectionPool = KafkaConnectionPool.getInstancePool();
-    KafkaProducerConnectionPool producerPool = KafkaProducerConnectionPool.getInstancePool();
-    KafkaConsumerConnectionPool consumerPool = KafkaConsumerConnectionPool.getInstancePool();
+
     private Gson gson = GsonSingleton.getInstance().getGson();
     public String sendToCore(String data)  {
         ApiRequest apiRequest = RequestUtils.createRequest(data);
@@ -50,42 +44,36 @@ public class ApiService {
         return response;
     }
 
-    public String sendPayment(){
+    public String sendPayment()  {
         String requestid = TokenUtils.generateNewToken();
         int processTime = MathUtils.getRandomInt(300,1000);
         PaymentRequest paymentRequest =
                 PaymentRequest.builder()
-                        .server("10.20.27.21")
-                        .method("payment")
-                        .uri("/payment")
-                        .http_status(200)
-                        .code("00")
-                        .mid("00")
                         .requestid(requestid)
                         .processtime(processTime)
-                        .client_ip("10.20.27.21")
-                        .device("device")
-                        .user("user")
                         .build();
-
-        Future future = ExecutorSingleton.submit(new SendPaymentCallable(paymentRequest));
-
-        String response;
         try {
-            response = (String) future.get(60000, TimeUnit.MILLISECONDS);
-        } catch (ExecutionException e) {
-            log.info("Kafka can not get response", e);
-            response = GsonSingleton.toJson(new ApiResponse(ErrorCode.EXECUTION_ERROR, e.getMessage(), paymentRequest.getRequestid()));
+            KafkaUtils.send(paymentRequest.toString());
+        } catch (Exception e) {
+            return "fail to send to kafka" + paymentRequest.getRequestid();
         }
-        catch (InterruptedException e) {
-            log.info("Thread is interrupted", e);
-            response = GsonSingleton.toJson(new ApiResponse(ErrorCode.INTERRUPTED_ERROR, e.getMessage(), paymentRequest.getRequestid()));
-        } catch (TimeoutException e) {
-            log.info("kafka send and receive is out of time ", e);
-            response = GsonSingleton.toJson(
-                    new ApiResponse(ErrorCode.MULTI_THREAD_ERROR, "Request is time out", paymentRequest.getRequestid()));
-        }
-
-        return response;
+        return "success send to kafka " + paymentRequest.getRequestid();
     }
+
+//    public String getReceive(){
+//        ApiResponse apiResponse = new ApiResponse("00", "success", TokenUtils.generateNewToken());
+//        String requestid = TokenUtils.generateNewToken();
+//        int processTime = MathUtils.getRandomInt(300,1000);
+//        PaymentRequest paymentRequest =
+//                PaymentRequest.builder()
+//                        .requestid(requestid)
+//                        .processtime(processTime)
+//                        .build();
+//        try {
+//            KafkaUtils.send(paymentRequest.toString());
+//        } catch (Exception e) {
+//            return "fail to send to kafka" + paymentRequest.getRequestid();
+//        }
+//        return "success send to kafka " + paymentRequest.getRequestid();
+//    }
 }

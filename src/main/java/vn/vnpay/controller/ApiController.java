@@ -1,11 +1,9 @@
 package vn.vnpay.controller;
 
-import org.apache.http.HttpRequest;
-import org.jboss.resteasy.plugins.server.tjws.PatchedHttpServletRequest;
+import org.jboss.resteasy.core.ResteasyHttpServletRequestWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.vnpay.service.ApiService;
-import vn.vnpay.util.AppConfigSingleton;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -29,7 +27,8 @@ public class ApiController {
     @Consumes({MediaType.APPLICATION_JSON})
     @Produces("application/json")
     public String sendToCore(String data) {
-//        log.info("IP call request is: {}", request.getRemoteAddr());
+//        log.info("IP call request is: {}", requestWrapper.getRemoteUser());
+
         log.info("sending data is: {}", data);
 
         long start = System.currentTimeMillis();
@@ -44,9 +43,9 @@ public class ApiController {
     @Path("/sendpayment")
     @GET
     @Produces("application/json")
-    public String sendPayment(String data) {
+    public String sendPayment() {
 //        log.info("IP call request is: {}", request.getRemoteAddr());
-        log.info("sending data is: {}", data);
+//        log.info("sending data is: {}", data);
 
         long start = System.currentTimeMillis();
         String message = apiService.sendPayment();
