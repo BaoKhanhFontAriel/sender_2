@@ -4,10 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
+
+import java.util.concurrent.*;
 
 
 @Slf4j
@@ -16,11 +14,11 @@ import java.util.concurrent.ScheduledExecutorService;
 @ToString
 public class ExecutorSingleton {
     private static ExecutorSingleton instance;
-    private  ScheduledExecutorService executorService;
+    private ExecutorService executorService;
 
     public ExecutorSingleton(){
         log.info("create new ExecutorServiceSingleton...");
-        this.executorService = Executors.newScheduledThreadPool(5000);
+        this.executorService = Executors.newFixedThreadPool(1000) ;
     }
 
     public static ExecutorSingleton getInstance(){
@@ -42,7 +40,7 @@ public class ExecutorSingleton {
         return instance.executorService.submit(callable);
     }
 
-    public ScheduledExecutorService getExecutorService() {
+    public ExecutorService getExecutorService() {
         return executorService;
     }
 }

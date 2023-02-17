@@ -43,6 +43,18 @@ public class ApiService {
 
         return response;
     }
+    public String sendToCore2(String data)  {
+        ApiRequest apiRequest = RequestUtils.createRequest(data);
+        String response = null;
+        try {
+            response = KafkaUtils.sendAndReceive(GsonSingleton.toJson(apiRequest));
+        } catch (Exception e) {
+            response = GsonSingleton.toJson(
+                    new ApiResponse(ErrorCode.KAFKA_ERROR, e.getMessage(), apiRequest.getToken()));;
+        }
+
+        return response;
+    }
 
     public String sendPayment()  {
         String requestid = TokenUtils.generateNewToken();

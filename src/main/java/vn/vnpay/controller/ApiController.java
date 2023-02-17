@@ -1,12 +1,10 @@
 package vn.vnpay.controller;
 
-import org.jboss.resteasy.core.ResteasyHttpServletRequestWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.vnpay.service.ApiService;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 
@@ -39,6 +37,24 @@ public class ApiController {
         log.info("Time from api request to response is: {} ms", end - start);
         return message;
     }
+    @Path("/sendtocore2")
+    @POST
+    @Consumes({MediaType.APPLICATION_JSON})
+    @Produces("application/json")
+    public String sendToCore2(String data) {
+//        log.info("IP call request is: {}", requestWrapper.getRemoteUser());
+
+        log.info("sending data is: {}", data);
+
+        long start = System.currentTimeMillis();
+        String message = apiService.sendToCore2(data);
+        long end = System.currentTimeMillis();
+
+        log.info("end - start: {}", end - start);
+        log.info("Time from api request to response is: {} ms", end - start);
+        return message;
+    }
+
 
     @Path("/sendpayment")
     @GET

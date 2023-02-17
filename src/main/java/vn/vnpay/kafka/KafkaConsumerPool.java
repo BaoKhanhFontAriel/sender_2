@@ -1,6 +1,7 @@
 package vn.vnpay.kafka;
 
 import lombok.Getter;
+import org.apache.kafka.clients.consumer.CommitFailedException;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -12,6 +13,7 @@ import vn.vnpay.util.ExecutorSingleton;
 import java.time.Duration;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Getter
@@ -23,10 +25,9 @@ public class KafkaConsumerPool extends ObjectPool<KafkaConsumerCell>{
     protected Thread thread;
     protected long startTime;
     protected long endTime;
-    private final int maxPoolSize;
-
     private int index;
     private static AtomicReference<LinkedBlockingQueue<String>> recordQueue = new AtomicReference<>(new LinkedBlockingQueue<>());
+    private static volatile boolean isReceived ;
 
     public synchronized static KafkaConsumerPool getInstancePool() {
         if (instancePool == null) {
@@ -37,7 +38,7 @@ public class KafkaConsumerPool extends ObjectPool<KafkaConsumerCell>{
 
     public KafkaConsumerPool() {
         setExpirationTime(Integer.MAX_VALUE);
-        maxPoolSize = KafkaPoolConfig.MAX_CONSUMER_POOL_SIZE;
+        setInitSize(KafkaPoolConfig.INIT_CONSUMER_POOL_SIZE);
         consumerTopic = KafkaPoolConfig.KAFKA_CONSUMER_TOPIC;
         index = 0;
 
@@ -51,8 +52,7 @@ public class KafkaConsumerPool extends ObjectPool<KafkaConsumerCell>{
 
     public void startPoolPolling() {
         log.info("Start Kafka consumer pool polling.........");
-        int count = 0;
-        while (count <= instancePool.maxPoolSize) {
+        while (getIdle() > 0) {
             KafkaConsumerCell consumerCell = getConnection();
             log.info("consumer {} start polling", consumerCell.getConsumer().groupMetadata().groupInstanceId());
             ExecutorSingleton.submit((Runnable) () ->
@@ -65,11 +65,19 @@ public class KafkaConsumerPool extends ObjectPool<KafkaConsumerCell>{
                                 consumerCell.getConsumer().groupMetadata().groupInstanceId(),
                                 r.partition(),
                                 r.offset(), r.key(), r.value());
-                        recordQueue.get().add(r.value());
+
+                        if (isReceived){
+                            log.info("add to record queue");
+                            recordQueue.get().add(r.value());
+                        }
+                    }
+                    try {
+                        consumerCell.getConsumer().commitSync();
+                    } catch (CommitFailedException e) {
+                        log.error("commit failed", e) ;
                     }
                 }//
             });
-            count++;
         }
     }
 
@@ -77,9 +85,13 @@ public class KafkaConsumerPool extends ObjectPool<KafkaConsumerCell>{
         return super.checkOut();
     }
 
-    public static String getRecord() throws Exception {
+
+    public static synchronized String getRecord() throws Exception {
         log.info("Get Kafka Consumer pool record.......");
-        return recordQueue.get().take();
+        isReceived = true;
+        String record = recordQueue.get().take();
+        isReceived = false;
+        return record;
     }
 
     @Override

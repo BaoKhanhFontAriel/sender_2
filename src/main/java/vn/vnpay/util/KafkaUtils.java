@@ -48,7 +48,6 @@ public class KafkaUtils {
             throw new Exception("Kafka can not produce message");
         }
 
-
         KafkaProducerPool.getInstancePool().releaseConnection(producerCell);
     }
 

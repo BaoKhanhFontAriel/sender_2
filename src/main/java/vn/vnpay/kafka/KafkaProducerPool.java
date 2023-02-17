@@ -19,7 +19,6 @@ public class KafkaProducerPool extends ObjectPool<KafkaProducerCell> {
     protected long startTime;
     protected long endTime;
     public synchronized static KafkaProducerPool getInstancePool() {
-        log.info("Create Kafka Producer Connection pool........................ ");
         if (instancePool == null) {
             instancePool = new KafkaProducerPool();
         }
@@ -27,7 +26,9 @@ public class KafkaProducerPool extends ObjectPool<KafkaProducerCell> {
     }
 
     public KafkaProducerPool() {
+        log.info("Create Kafka Producer Connection pool........................ ");
         setExpirationTime(KafkaPoolConfig.TIME_OUT);
+        setInitSize(KafkaPoolConfig.INIT_PRODUCER_POOL_SIZE);
         producerTopic = KafkaPoolConfig.KAFKA_PRODUCER_TOPIC;
         producerProps = new Properties();
         producerProps.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaPoolConfig.KAFKA_SERVER);
@@ -37,6 +38,8 @@ public class KafkaProducerPool extends ObjectPool<KafkaProducerCell> {
 
     public synchronized KafkaProducerCell getConnection() {
         log.info("Get kafka production connection.............");
+        log.info("idle size = {}", getIdle());
+        log.info("active size = {}", getActive());
         return super.checkOut();
     }
 

@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -24,7 +25,7 @@ public class KafkaConsumerCell {
         String memberId = String.valueOf(index);
         consumerProps.setProperty(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG, memberId);
 
-        this.consumer = new org.apache.kafka.clients.consumer.KafkaConsumer<>(consumerProps);
+        this.consumer = new KafkaConsumer<>(consumerProps);
         this.consumer.subscribe(Collections.singletonList(consumerTopic));
         log.info("create consumer {} - partition {} - topic {}", consumer.groupMetadata().groupInstanceId(), consumer.assignment(), consumerTopic);
     }

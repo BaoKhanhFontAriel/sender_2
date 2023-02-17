@@ -33,13 +33,13 @@ public class MainApp extends Application {
 
         singleton.add(new ApiController());
         classes.add(ApiService.class);
-        classes.add(ResteasyHttpServletRequestWrapper.class);
 
 //        AppConfigSingleton.getInstance().readonfig();
-        KafkaUtils.createNewTopic(KafkaPoolConfig.KAFKA_PRODUCER_TOPIC, 10, (short) 1);
+//        KafkaUtils.createNewTopic(KafkaPoolConfig.KAFKA_PRODUCER_TOPIC, 10, (short) 1);
         ExecutorSingleton.getInstance();
         RedisConnectionPool.getInstancePool().start();
-        KafkaProducerPool.getInstancePool();
+        KafkaProducerPool.getInstancePool().init();
+        KafkaConsumerPool.getInstancePool().init();
         KafkaConsumerPool.getInstancePool().startPoolPolling();
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());
     }
