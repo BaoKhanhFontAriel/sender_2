@@ -52,6 +52,7 @@ public class ApiService {
             response = GsonSingleton.toJson(
                     new ApiResponse(ErrorCode.KAFKA_ERROR, e.getMessage(), apiRequest.getToken()));;
         }
+        log.info("response return = {}", response);
 
         return response;
     }

@@ -38,8 +38,6 @@ public class KafkaProducerPool extends ObjectPool<KafkaProducerCell> {
 
     public synchronized KafkaProducerCell getConnection() {
         log.info("Get kafka production connection.............");
-        log.info("idle size = {}", getIdle());
-        log.info("active size = {}", getActive());
         return super.checkOut();
     }
 

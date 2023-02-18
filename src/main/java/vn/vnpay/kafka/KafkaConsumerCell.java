@@ -21,9 +21,9 @@ public class KafkaConsumerCell {
     private boolean isClosed;
     private org.apache.kafka.clients.consumer.KafkaConsumer<String, String> consumer;
 
-    public KafkaConsumerCell(Properties consumerProps, String consumerTopic, int index) {
-        String memberId = String.valueOf(index);
-        consumerProps.setProperty(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG, memberId);
+    public KafkaConsumerCell(Properties consumerProps, String consumerTopic) {
+//        String memberId = String.valueOf(index);
+//        consumerProps.setProperty(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG, memberId);
 
         this.consumer = new KafkaConsumer<>(consumerProps);
         this.consumer.subscribe(Collections.singletonList(consumerTopic));

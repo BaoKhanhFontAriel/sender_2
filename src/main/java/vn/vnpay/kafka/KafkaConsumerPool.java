@@ -13,11 +13,10 @@ import vn.vnpay.util.ExecutorSingleton;
 import java.time.Duration;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Getter
-public class KafkaConsumerPool extends ObjectPool<KafkaConsumerCell>{
+public class KafkaConsumerPool extends ObjectPool<KafkaConsumerCell> {
     private static final Logger log = LoggerFactory.getLogger(KafkaConsumerPool.class);
     private static KafkaConsumerPool instancePool;
     protected Properties consumerProps;
@@ -25,9 +24,7 @@ public class KafkaConsumerPool extends ObjectPool<KafkaConsumerCell>{
     protected Thread thread;
     protected long startTime;
     protected long endTime;
-    private int index;
-    private static AtomicReference<LinkedBlockingQueue<String>> recordQueue = new AtomicReference<>(new LinkedBlockingQueue<>());
-    private static volatile boolean isReceived ;
+    private static final AtomicReference<LinkedBlockingQueue<String>> recordQueue = new AtomicReference<>(new LinkedBlockingQueue<>());
 
     public synchronized static KafkaConsumerPool getInstancePool() {
         if (instancePool == null) {
@@ -40,8 +37,6 @@ public class KafkaConsumerPool extends ObjectPool<KafkaConsumerCell>{
         setExpirationTime(Integer.MAX_VALUE);
         setInitSize(KafkaPoolConfig.INIT_CONSUMER_POOL_SIZE);
         consumerTopic = KafkaPoolConfig.KAFKA_CONSUMER_TOPIC;
-        index = 0;
-
         consumerProps = new Properties();
         consumerProps.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaPoolConfig.KAFKA_SERVER);
         consumerProps.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
@@ -66,39 +61,33 @@ public class KafkaConsumerPool extends ObjectPool<KafkaConsumerCell>{
                                 r.partition(),
                                 r.offset(), r.key(), r.value());
 
-                        if (isReceived){
-                            log.info("add to record queue");
                             recordQueue.get().add(r.value());
-                        }
                     }
+
+
                     try {
                         consumerCell.getConsumer().commitSync();
                     } catch (CommitFailedException e) {
-                        log.error("commit failed", e) ;
+                        log.error("commit failed", e);
                     }
                 }//
             });
         }
     }
 
-    public KafkaConsumerCell getConnection(){
+    public KafkaConsumerCell getConnection() {
         return super.checkOut();
     }
 
 
-    public static synchronized String getRecord() throws Exception {
+    public static String getRecord() throws Exception {
         log.info("Get Kafka Consumer pool record.......");
-        isReceived = true;
-        String record = recordQueue.get().take();
-        isReceived = false;
-        return record;
+        return recordQueue.get().take();
     }
 
     @Override
     protected KafkaConsumerCell create() {
-        int temp = index;
-        index++;
-        return new KafkaConsumerCell(consumerProps, consumerTopic, temp);
+        return new KafkaConsumerCell(consumerProps, consumerTopic);
     }
 
     @Override

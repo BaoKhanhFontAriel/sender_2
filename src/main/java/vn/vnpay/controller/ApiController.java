@@ -27,13 +27,13 @@ public class ApiController {
     public String sendToCore(String data) {
 //        log.info("IP call request is: {}", requestWrapper.getRemoteUser());
 
-        log.info("sending data is: {}", data);
+        log.info("thread {} sending data is: {}", Thread.currentThread().getName(), data);
 
         long start = System.currentTimeMillis();
         String message = apiService.sendToCore(data);
         long end = System.currentTimeMillis();
 
-        log.info("end - start: {}", end - start);
+        log.info("thread {} end - start: {}", Thread.currentThread().getName(), (end - start));
         log.info("Time from api request to response is: {} ms", end - start);
         return message;
     }
@@ -44,13 +44,13 @@ public class ApiController {
     public String sendToCore2(String data) {
 //        log.info("IP call request is: {}", requestWrapper.getRemoteUser());
 
-        log.info("sending data is: {}", data);
+        log.info("thread {} sending data is: {}", Thread.currentThread().getName(), data);
 
         long start = System.currentTimeMillis();
         String message = apiService.sendToCore2(data);
         long end = System.currentTimeMillis();
 
-        log.info("end - start: {}", end - start);
+        log.info("thread {} end - start: {}", Thread.currentThread().getName(), (end - start));
         log.info("Time from api request to response is: {} ms", end - start);
         return message;
     }

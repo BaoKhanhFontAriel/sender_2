@@ -28,7 +28,7 @@ public abstract class ObjectPool<T> {
     public synchronized void init(){
         long now = System.currentTimeMillis();
         int count = 0;
-        while (count <= initSize){
+        while (count < initSize){
             unlocked.put(create(), now);
             count++;
         }

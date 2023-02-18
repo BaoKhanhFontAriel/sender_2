@@ -133,11 +133,11 @@
 <!--    </appender>-->
 
     <logger name="vn.vnpay.sender" additivity="false">
-        <appender-ref ref="WARN" level="warn"/>
-        <appender-ref ref="ERROR" level="error"/>
-        <appender-ref ref="DEBUG" level="debug"/>
-        <appender-ref ref="INFO" level="info"/>
-        <appender-ref ref="STASH" level="info"/>
+<!--        <appender-ref ref="WARN" level="warn"/>-->
+<!--        <appender-ref ref="ERROR" level="error"/>-->
+<!--        <appender-ref ref="DEBUG" level="debug"/>-->
+<!--        <appender-ref ref="INFO" level="info"/>-->
+<!--        <appender-ref ref="STASH" level="info"/>-->
         <appender-ref ref="STDOUT" level="info"/>
     </logger>
     <root level="info">
