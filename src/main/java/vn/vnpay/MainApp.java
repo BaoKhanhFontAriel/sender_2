@@ -7,7 +7,6 @@ import vn.vnpay.controller.ApiController;
 import vn.vnpay.kafka.KafkaConsumerPool;
 import vn.vnpay.kafka.KafkaPoolConfig;
 import vn.vnpay.kafka.KafkaProducerPool;
-import vn.vnpay.redis.RedisConnectionPool;
 import vn.vnpay.service.ApiService;
 import vn.vnpay.thread.ShutdownThread;
 import vn.vnpay.util.ExecutorSingleton;
@@ -37,7 +36,6 @@ public class MainApp extends Application {
 //        AppConfigSingleton.getInstance().readonfig();
 //        KafkaUtils.createNewTopic(KafkaPoolConfig.KAFKA_PRODUCER_TOPIC, 10, (short) 1);
         ExecutorSingleton.getInstance();
-        RedisConnectionPool.getInstancePool().start();
         KafkaProducerPool.getInstancePool().init();
         KafkaConsumerPool.getInstancePool().init();
         KafkaConsumerPool.getInstancePool().startPoolPolling();

@@ -2,6 +2,7 @@ package vn.vnpay.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.NewPartitions;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -61,8 +62,12 @@ public class KafkaUtils {
             adminClient = AdminClient.create(props);
         }
 
-        NewTopic newTopic = new NewTopic(topic, partition, replica);
+        NewTopic newTopic = new NewTopic(topic, 10, replica);
         adminClient.createTopics(Arrays.asList(newTopic));
+
+        Map<String, NewPartitions> map = new HashMap<>();
+        map.put(topic, NewPartitions.increaseTo(partition));
+        adminClient.createPartitions(map);
 
         adminClient.close();
     }

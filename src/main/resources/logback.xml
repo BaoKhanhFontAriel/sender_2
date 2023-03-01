@@ -123,14 +123,14 @@
         </encoder>
     </appender>
 
-<!--    <appender name="STASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">-->
-<!--        <destination>10.22.22.75:5044</destination>-->
+    <appender name="STASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>10.22.22.75:5044</destination>
 
-<!--        &lt;!&ndash; encoder is required &ndash;&gt;-->
-<!--        <encoder class="net.logstash.logback.encoder.LogstashEncoder">-->
-<!--            <customFields>{"app_name":"api"} </customFields>-->
-<!--        </encoder>-->
-<!--    </appender>-->
+        <!-- encoder is required -->
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"app_name":"khanh_app"} </customFields>
+        </encoder>
+    </appender>
 
     <logger name="vn.vnpay.sender" additivity="false">
 <!--        <appender-ref ref="WARN" level="warn"/>-->
