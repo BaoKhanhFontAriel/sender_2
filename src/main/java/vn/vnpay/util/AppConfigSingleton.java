@@ -12,8 +12,6 @@ import java.util.Properties;
 
 public class AppConfigSingleton {
 
-    public static final String FILE_DIR = "src/main/resources/application.properties";
-
     public static final String FILE_NAME = "/application.properties";
 
     private static final Logger log = LoggerFactory.getLogger(AppConfigSingleton.class);

@@ -3,6 +3,8 @@ package vn.vnpay.runnable;
 import vn.vnpay.models.PaymentRequest;
 import vn.vnpay.util.GsonSingleton;
 import vn.vnpay.util.KafkaUtils;
+import vn.vnpay.util.MathUtils;
+import vn.vnpay.util.TokenUtils;
 
 import java.util.concurrent.Callable;
 
@@ -16,8 +18,7 @@ public class SendPaymentCallable implements Callable<String> {
 
     @Override
     public String call() throws Exception {
-        String data = GsonSingleton.toJson(paymentRequest);
-        String answer = KafkaUtils.sendAndReceive(data);
-        return answer;
+        KafkaUtils.send("khanh-payment-topic", paymentRequest.toString());
+        return "success send to kafka " + paymentRequest.getRequestid();
     }
 }

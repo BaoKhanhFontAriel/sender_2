@@ -14,7 +14,7 @@ import java.util.*;
 public class KafkaUtils {
     public static String sendAndReceive(String data) throws Exception {
         log.info("send and receive: {}", data);
-        send(data);
+        send(KafkaPoolConfig.KAFKA_PRODUCER_TOPIC, data);
 
         String res = receive();
         log.info("response is: {}", res);
@@ -26,14 +26,14 @@ public class KafkaUtils {
         return KafkaConsumerPool.getRecord();
     }
 
-    public static void send(String message) throws Exception {
+    public static void send(String topic, String message) throws Exception {
         log.info("Kafka send.........");
         KafkaProducerCell producerCell = KafkaProducerPool.getInstancePool().getConnection();
         KafkaProducer<String, String> producer = producerCell.getProducer();
 
         // send message
         log.info("message send {}", message);
-        ProducerRecord<String, String> record = new ProducerRecord<>(producerCell.getProducerTopic(), message);
+        ProducerRecord<String, String> record = new ProducerRecord<>(topic, message);
         try{
             producer.send(record, (recordMetadata, e) -> {
                 if (e == null) {
