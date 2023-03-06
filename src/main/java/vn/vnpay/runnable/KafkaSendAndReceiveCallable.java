@@ -1,6 +1,7 @@
 package vn.vnpay.runnable;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.protocol.types.Field;
 import vn.vnpay.models.ApiRequest;
 import vn.vnpay.util.GsonSingleton;
 import vn.vnpay.util.KafkaUtils;
@@ -18,7 +19,7 @@ public class KafkaSendAndReceiveCallable implements Callable<String> {
     @Override
     public String call() throws Exception {
         String data = GsonSingleton.toJson(apiRequest);
-        ;
-        return data;
+        String response = KafkaUtils.sendAndReceive(data);
+        return response;
     }
 }

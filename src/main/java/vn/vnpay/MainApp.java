@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.vnpay.controller.ApiController;
 import vn.vnpay.kafka.KafkaConsumerPool;
-import vn.vnpay.kafka.KafkaPoolConfig;
 import vn.vnpay.kafka.KafkaProducerPool;
 import vn.vnpay.service.ApiService;
 import vn.vnpay.thread.ShutdownThread;
@@ -35,10 +34,10 @@ public class MainApp extends Application {
 
 //        AppConfigSingleton.getInstance().readonfig();
 //        KafkaUtils.createNewTopic(KafkaPoolConfig.KAFKA_PRODUCER_TOPIC, 10, (short) 1);
-        ExecutorSingleton.getInstance();
-        KafkaProducerPool.getInstancePool().init();
-        KafkaConsumerPool.getInstancePool().init();
-        KafkaConsumerPool.getInstancePool().startPoolPolling();
+//        ExecutorSingleton.getInstance();
+//        KafkaProducerPool.getInstancePool();
+//        KafkaConsumerPool.getInstancePool();
+        KafkaUtils.startPoolPolling();
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());
     }
 

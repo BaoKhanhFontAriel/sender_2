@@ -4,26 +4,29 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewPartitions;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.consumer.CommitFailedException;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import vn.vnpay.kafka.*;
 
+import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class KafkaUtils {
+    private static final AtomicReference<LinkedBlockingQueue<String>> recordQueue = new AtomicReference<>(new LinkedBlockingQueue<>());
+
     public static String sendAndReceive(String data) throws Exception {
         log.info("send and receive: {}", data);
-        send(KafkaPoolConfig.KAFKA_PRODUCER_TOPIC, data);
+        send("send-topic", data);
 
         String res = receive();
         log.info("response is: {}", res);
         return res;
-    }
-
-    public static String receive() throws Exception {
-        log.info("Kafka start receiving.........");
-        return KafkaConsumerPool.getRecord();
     }
 
     public static void send(String topic, String message) throws Exception {
@@ -71,4 +74,48 @@ public class KafkaUtils {
 
         adminClient.close();
     }
+
+
+    // For Kafka consumer
+    public static String receive() throws Exception {
+        log.info("Kafka start receiving.........");
+        return getRecord();
+    }
+    public static String getRecord() throws Exception {
+        log.info("Get Kafka Consumer pool record.......");
+        return recordQueue.get().take();
+    }
+
+    public static void startPoolPolling() {
+        log.info("Start Kafka consumer pool polling.........");
+        int count = 10;
+        while (count > 0) {
+            KafkaConsumerCell consumerCell = KafkaConsumerPool.getInstancePool().getConnection();
+            log.info("consumer {} start polling", consumerCell.getConsumer().groupMetadata().groupInstanceId());
+            ExecutorSingleton.submit((Runnable) () ->
+            {
+                while (true) {
+                    ConsumerRecords<String, String> records = consumerCell.poll(Duration.ofMillis(100));
+                    for (ConsumerRecord<String, String> r : records) {
+                        log.info("----");
+                        log.info("kafka consumer id {} receive data: partition = {}, offset = {}, key = {}, value = {}",
+                                consumerCell.getConsumer().groupMetadata().groupInstanceId(),
+                                r.partition(),
+                                r.offset(), r.key(), r.value());
+
+                        recordQueue.get().add(r.value());
+                    }
+
+
+                    try {
+                        consumerCell.getConsumer().commitSync();
+                    } catch (CommitFailedException e) {
+                        log.error("commit failed", e);
+                    }
+                }//
+            });
+            count--;
+        }
+    }
+
 }

@@ -24,7 +24,6 @@ public class KafkaConsumerPool extends ObjectPool<KafkaConsumerCell> {
     protected Thread thread;
     protected long startTime;
     protected long endTime;
-    private static final AtomicReference<LinkedBlockingQueue<String>> recordQueue = new AtomicReference<>(new LinkedBlockingQueue<>());
 
     public synchronized static KafkaConsumerPool getInstancePool() {
         if (instancePool == null) {
@@ -45,44 +44,8 @@ public class KafkaConsumerPool extends ObjectPool<KafkaConsumerCell> {
         consumerProps.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
     }
 
-    public void startPoolPolling() {
-        log.info("Start Kafka consumer pool polling.........");
-        while (getIdle() > 0) {
-            KafkaConsumerCell consumerCell = getConnection();
-            log.info("consumer {} start polling", consumerCell.getConsumer().groupMetadata().groupInstanceId());
-            ExecutorSingleton.submit((Runnable) () ->
-            {
-                while (true) {
-                    ConsumerRecords<String, String> records = consumerCell.poll(Duration.ofMillis(100));
-                    for (ConsumerRecord<String, String> r : records) {
-                        log.info("----");
-                        log.info("kafka consumer id {} receive data: partition = {}, offset = {}, key = {}, value = {}",
-                                consumerCell.getConsumer().groupMetadata().groupInstanceId(),
-                                r.partition(),
-                                r.offset(), r.key(), r.value());
-
-                            recordQueue.get().add(r.value());
-                    }
-
-
-                    try {
-                        consumerCell.getConsumer().commitSync();
-                    } catch (CommitFailedException e) {
-                        log.error("commit failed", e);
-                    }
-                }//
-            });
-        }
-    }
-
     public KafkaConsumerCell getConnection() {
         return super.checkOut();
-    }
-
-
-    public static String getRecord() throws Exception {
-        log.info("Get Kafka Consumer pool record.......");
-        return recordQueue.get().take();
     }
 
     @Override

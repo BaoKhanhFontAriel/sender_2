@@ -30,13 +30,20 @@ public class ApiService {
 
     public String sendToCore(String data) {
         ApiRequest apiRequest = RequestUtils.createRequest(data);
-
-
-        Future future = new Fiber<>(() -> {
-            ExecutorSingleton.submit(new KafkaSendAndReceiveCallable(apiRequest));
-        }).start();
-
         String response = StringUtils.EMPTY;
+
+//        Future future = ExecutorSingleton.submit(new KafkaSendAndReceiveCallable(apiRequest));
+
+        Future future = new Fiber(() -> {
+            String convert  = GsonSingleton.toJson(apiRequest);
+            String res = null;
+            try {
+                res = KafkaUtils.sendAndReceive(convert);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            return res;
+        });
         try {
             response = (String) future.get(60000, TimeUnit.MILLISECONDS);
         } catch (ExecutionException e) {
@@ -77,12 +84,18 @@ public class ApiService {
                         .requestid(requestid)
                         .processtime(processTime)
                         .build();
-        Future future = new Fiber<>(() -> {
-            ExecutorSingleton.submit(new SendPaymentCallable(paymentRequest));
-        }).start();
-
         StringBuilder sb = new StringBuilder();
         String response = StringUtils.EMPTY;
+
+        Future future = new Fiber<>(() -> {
+            try {
+                KafkaUtils.send("khanh-payment-topic", paymentRequest.toString());
+            } catch (Exception e) {
+                return sb.append("fail to send to kafka ").append(paymentRequest.getRequestid()).toString();
+            }
+            return sb.append("success to send to kafka ").append(paymentRequest.getRequestid()).toString();
+        }).start();
+
         try {
             response = (String) future.get(60000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
@@ -92,19 +105,6 @@ public class ApiService {
         } catch (TimeoutException e) {
             response = sb.append("time out request = ").append(paymentRequest.getRequestid()).toString();
         }
-//        String requestid = TokenUtils.generateNewToken();
-//        int processTime = MathUtils.getRandomInt(300, 1000);
-//        PaymentRequest paymentRequest =
-//                PaymentRequest.builder()
-//                        .requestid(requestid)
-//                        .processtime(processTime)
-//                        .build();
-//        try {
-//            KafkaUtils.send("khanh-payment-topic", paymentRequest.toString());
-//        } catch (Exception e) {
-//            return "fail to send to kafka" + paymentRequest.getRequestid();
-//        }
-//        return "success send to kafka " + paymentRequest.getRequestid();
         return response;
     }
 }

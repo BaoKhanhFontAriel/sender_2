@@ -43,7 +43,7 @@ public class KafkaProducerPool extends ObjectPool<KafkaProducerCell> {
 
 
     public void releaseConnection(KafkaProducerCell consumer) {
-        log.info("begin releasing connection {}", consumer.toString());
+        log.info("begin releasing connection {}", consumer);
         super.checkIn(consumer);
     }
 
