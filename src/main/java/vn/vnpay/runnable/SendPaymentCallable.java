@@ -18,7 +18,7 @@ public class SendPaymentCallable implements Callable<String> {
 
     @Override
     public String call() throws Exception {
-        KafkaUtils.send("khanh-payment-topic", paymentRequest.toString());
+        KafkaUtils.send(paymentRequest.toString());
         return "success send to kafka " + paymentRequest.getRequestid();
     }
 }

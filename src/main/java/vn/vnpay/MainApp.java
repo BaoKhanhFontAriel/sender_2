@@ -1,13 +1,12 @@
 package vn.vnpay;
-
-import org.jboss.resteasy.core.ResteasyHttpServletRequestWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.vnpay.controller.ApiController;
-import vn.vnpay.kafka.KafkaConsumerPool;
+import vn.vnpay.kafka.KafkaConfig;
 import vn.vnpay.kafka.KafkaProducerPool;
 import vn.vnpay.service.ApiService;
 import vn.vnpay.thread.ShutdownThread;
+import vn.vnpay.util.AppConfigSingleton;
 import vn.vnpay.util.ExecutorSingleton;
 import vn.vnpay.util.KafkaUtils;
 
@@ -34,8 +33,11 @@ public class MainApp extends Application {
 
 //        AppConfigSingleton.getInstance().readonfig();
 //        KafkaUtils.createNewTopic(KafkaPoolConfig.KAFKA_PRODUCER_TOPIC, 10, (short) 1);
-//        ExecutorSingleton.getInstance();
-//        KafkaProducerPool.getInstancePool();
+        ExecutorSingleton.getInstance();
+        KafkaConfig.getInstance().setKafkaServer(AppConfigSingleton.getInstance().getStringProperty("kafka.server"));
+        KafkaConfig.getInstance().setKafkaConnectionTimeout(30000);
+        KafkaConfig.getInstance().setKafkaProducerTopic("khanh-payment-topic");
+        KafkaProducerPool.getInstancePool();
 //        KafkaConsumerPool.getInstancePool();
         KafkaUtils.startPoolPolling();
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());

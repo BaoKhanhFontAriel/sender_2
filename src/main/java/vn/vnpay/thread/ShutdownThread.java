@@ -2,7 +2,8 @@ package vn.vnpay.thread;
 
 
 import lombok.extern.slf4j.Slf4j;
-import vn.vnpay.kafka.*;
+import vn.vnpay.kafka.KafkaConsumerPool;
+import vn.vnpay.kafka.KafkaProducerPool;
 import vn.vnpay.rabbit.RabbitConnectionPool;
 import vn.vnpay.util.ExecutorSingleton;
 

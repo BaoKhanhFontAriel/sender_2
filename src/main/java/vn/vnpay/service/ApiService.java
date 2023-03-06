@@ -89,7 +89,7 @@ public class ApiService {
 
         Future future = new Fiber<>(() -> {
             try {
-                KafkaUtils.send("khanh-payment-topic", paymentRequest.toString());
+                KafkaUtils.send( paymentRequest.toString());
             } catch (Exception e) {
                 return sb.append("fail to send to kafka ").append(paymentRequest.getRequestid()).toString();
             }
