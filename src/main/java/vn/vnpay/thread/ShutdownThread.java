@@ -14,8 +14,8 @@ public class ShutdownThread extends Thread{
 //        kafkaConnectionPool.getPool().forEach(KafkaConnectionCell::close);
 //        rabbitConnectionPool.getPool().forEach(RabbitConnectionCell::close);
         ExecutorSingleton.shutdownNow();
-        KafkaConsumerPool.getInstancePool().shutdown();
-        KafkaProducerPool.getInstancePool().shutdown();
+        KafkaConsumerPool.getInstance().shutdown();
+        KafkaProducerPool.getInstance().shutdown();
 //        rabbitConnectionPool.getPool().clear();
         System.out.println("shut down hook task completed..");
     }

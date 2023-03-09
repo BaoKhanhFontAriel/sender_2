@@ -34,16 +34,19 @@ public class ApiService {
 
 //        Future future = ExecutorSingleton.submit(new KafkaSendAndReceiveCallable(apiRequest));
 
-        Future future = new Fiber(() -> {
+        Future future = ExecutorSingleton.submit(() -> {
             String convert  = GsonSingleton.toJson(apiRequest);
             String res = null;
             try {
-                res = KafkaUtils.sendAndReceive(convert);
+                KafkaUtils.send(convert);
+                res = KafkaUtils.receive();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
             return res;
         });
+
+
         try {
             response = (String) future.get(60000, TimeUnit.MILLISECONDS);
         } catch (ExecutionException e) {
@@ -87,14 +90,17 @@ public class ApiService {
         StringBuilder sb = new StringBuilder();
         String response = StringUtils.EMPTY;
 
-        Future future = new Fiber<>(() -> {
+        Future future = ExecutorSingleton.submit(() -> {
             try {
                 KafkaUtils.send( paymentRequest.toString());
             } catch (Exception e) {
-                return sb.append("fail to send to kafka ").append(paymentRequest.getRequestid()).toString();
+                return sb.append("fail to send to kafka ")
+                        .append(paymentRequest.getRequestid())
+                        .append("caused by ")
+                        .append(e.getMessage()).toString();
             }
             return sb.append("success to send to kafka ").append(paymentRequest.getRequestid()).toString();
-        }).start();
+        });
 
         try {
             response = (String) future.get(60000, TimeUnit.MILLISECONDS);

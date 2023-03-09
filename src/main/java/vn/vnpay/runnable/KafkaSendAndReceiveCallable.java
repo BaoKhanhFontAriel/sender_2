@@ -19,7 +19,6 @@ public class KafkaSendAndReceiveCallable implements Callable<String> {
     @Override
     public String call() throws Exception {
         String data = GsonSingleton.toJson(apiRequest);
-        String response = KafkaUtils.sendAndReceive(data);
-        return response;
+        return KafkaUtils.sendAndReceive(data);
     }
 }

@@ -20,20 +20,28 @@ public class KafkaUtils {
     }
 
     public static void send(String message) throws Exception {
-        KafkaProducerPool.send(message);
+        KafkaProducerPool.getInstance().send(message);
+//        log.info("inuse pool size = {}", KafkaProducerPool.getInstance().getInUse().size());
+//        log.info("available pool size = {}", KafkaProducerPool.getInstance().getAvailable().size());
+//        log.info("total pool size = {}",
+//                KafkaProducerPool.getInstance().getAvailable().size() + KafkaProducerPool.getInstance().getInUse().size());
+
     }
 
-    // For Kafka consumer
     public static String receive() throws Exception {
         log.info("Kafka start receiving.........");
-        return KafkaConsumerPool.getRecord();
+        return KafkaConsumerPool.getInstance().getRecord();
     }
 
     public static void startPoolPolling() {
         log.info("Start Kafka consumer pool polling.........");
         int count = 10;
         while (count > 0) {
-            ExecutorSingleton.submit((Runnable) KafkaConsumerPool::createPolling);
+            try {
+                KafkaConsumerPool.getInstance().createConsumerPolling();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
             count--;
         }
     }
