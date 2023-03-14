@@ -34,7 +34,7 @@ public class ApiService {
 
 //        Future future = ExecutorSingleton.submit(new KafkaSendAndReceiveCallable(apiRequest));
 
-        Future future = ExecutorSingleton.submit(() -> {
+        Future future = new Fiber(() -> {
             String convert  = GsonSingleton.toJson(apiRequest);
             String res = null;
             try {
@@ -44,7 +44,7 @@ public class ApiService {
                 throw new RuntimeException(e);
             }
             return res;
-        });
+        }).start();
 
 
         try {
@@ -90,10 +90,12 @@ public class ApiService {
         StringBuilder sb = new StringBuilder();
         String response = StringUtils.EMPTY;
 
-        Future future = ExecutorSingleton.submit(() -> {
+       Future future =  ExecutorSingleton.submit(() -> {
             try {
                 KafkaUtils.send( paymentRequest.toString());
             } catch (Exception e) {
+                log.info("Has ex");
+                log.error("Has ex:",e);
                 return sb.append("fail to send to kafka ")
                         .append(paymentRequest.getRequestid())
                         .append("caused by ")

@@ -40,7 +40,7 @@ public class MainApp extends Application {
 
         KafkaConfig kafkaConfig = KafkaConfig.builder()
                 .kafkaServer(AppConfigSingleton.getInstance().getStringProperty("kafka.server"))
-                .kafkaConnectionTimeout(30000)
+                .kafkaConnectionTimeout(2000)
                 .kafkaProducerTopic(AppConfigSingleton.getInstance().getStringProperty("kafka.topic.producer"))
                 .kafkaConsumerTopic(AppConfigSingleton.getInstance().getStringProperty("kafka.topic.consumer"))
                 .kafkaConsumerGroupId(AppConfigSingleton.getInstance().getStringProperty("kafka.consumer.group_id"))

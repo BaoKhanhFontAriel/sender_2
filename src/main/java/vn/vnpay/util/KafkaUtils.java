@@ -21,11 +21,6 @@ public class KafkaUtils {
 
     public static void send(String message) throws Exception {
         KafkaProducerPool.getInstance().send(message);
-        log.info("inuse pool size = {}", KafkaProducerPool.getInstance().getInUse().size());
-        log.info("available pool size = {}", KafkaProducerPool.getInstance().getAvailable().size());
-        log.info("total pool size = {}",
-                KafkaProducerPool.getInstance().getAvailable().size() + KafkaProducerPool.getInstance().getInUse().size());
-
     }
 
     public static String receive() throws Exception {
